@@ -68,6 +68,7 @@ class Example(QMainWindow):
         self.check_box.stateChanged.connect(Questions.set_random_state)
         self.check_box.setText('Показывать вопросы в случайном порядке')
         self.check_box.setChecked(True)
+        self.check_box.setFont(QFont("FreeMono, monospace", 12))
         vbox.addWidget(self.check_box)
         vbox.addStretch(1)
         self.setCentralWidget(widget)

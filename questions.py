@@ -18,6 +18,7 @@ class Questions:
     queue: List[List[Union[int, str]]] = []
     learned_count: int = 0
     inprocess_count: int = 0
+    random_state: bool = True
 
     @classmethod
     def clear_data(cls):
@@ -52,8 +53,12 @@ class Questions:
     @classmethod
     def read_file(cls):
         with open(cls.files[cls.status], 'r', encoding='utf-8') as f:
-            for text in f.readlines():
-                cls.queue.insert(random.randint(0, len(cls.queue) + 1), [text, 0])
+            if cls.random_state:
+                for text in f.readlines():
+                    cls.queue.insert(random.randint(0, len(cls.queue) + 1), [text, 0])
+            else:
+                for text in f.readlines():
+                    cls.queue.append([text, 0])
 
     @classmethod
     def question_accept(cls):
@@ -69,7 +74,7 @@ class Questions:
         else:
             if cls.queue[0][1] == 1:
                 cls.inprocess_count += 1
-            place: int = cls.queue[0][1] * 3
+            place: int = cls.queue[0][1] * 4
             text = cls.queue[0]
             cls.queue.pop(0)
             cls.queue.insert(place, text)
@@ -91,8 +96,8 @@ class Questions:
             learned = set()
             with open(cls.files['old'], 'r', encoding='utf-8') as f:
                 for text in f.readlines():
-                    if text != cls.queue[0][0]:
-                        learned.add(text)
+                    learned.add(text)
+            learned.add(cls.queue[0][0])
             with open(cls.files['old'], 'w', encoding='utf-8') as f:
                 for text in learned:
                     f.write(text)
@@ -124,7 +129,7 @@ class Questions:
             learned = set()
             with open(cls.files['old'], 'r', encoding='utf-8') as f:
                 for text in f.readlines():
-                    if unlearned_text != cls.queue[0][0]:
+                    if unlearned_text != text:
                         learned.add(text)
             with open(cls.files['old'], 'w', encoding='utf-8') as f:
                 for text in learned:
@@ -139,20 +144,20 @@ class Questions:
             unlearned = set()
             with open(cls.files['new'], 'r', encoding='utf-8') as f:
                 for text in f.readlines():
-                    if unlearned_text != cls.queue[0][0]:
-                        unlearned.add(text)
-            with open(cls.files['old'], 'w', encoding='utf-8') as f:
+                    unlearned.add(text)
+            unlearned.add(unlearned_text)
+            with open(cls.files['new'], 'w', encoding='utf-8') as f:
                 for text in unlearned:
                     f.write(text)
 
     @classmethod
     def question_failed(cls):
         """Вызывается если пользователь провалил вопрос"""
+        if cls.inprocess_count >= 1 and cls.queue[0][1] > 0:
+            cls.inprocess_count -= 1
         cls.queue[0][1] = 0
         cls.delete_from_learned(cls.queue[0][0])
         cls.add_to_unlearned(cls.queue[0][0])
-        if cls.inprocess_count >= 1:
-            cls.inprocess_count -= 1
 
     @classmethod
     def get_learned(cls):
@@ -165,3 +170,15 @@ class Questions:
     @classmethod
     def get_inprocess(cls):
         return cls.inprocess_count
+
+    @classmethod
+    def skip_question(cls):
+        text = cls.queue.pop(0)
+        if text[1] > 0:
+            cls.inprocess_count -= 1
+        cls.queue.append([text[0], 0])
+
+    @classmethod
+    def set_random_state(cls, random_state: bool) -> None:
+        cls.random_state = random_state
+

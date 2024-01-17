@@ -13,7 +13,8 @@ from PyQt5.QtWidgets import (
     QScrollArea,
     QSizePolicy,
     QGraphicsDropShadowEffect,
-    QDesktopWidget
+    QDesktopWidget,
+    QCheckBox
 )
 from PyQt5.QtCore import QCoreApplication, Qt, QRect, QSize
 from PyQt5.QtGui import QIcon, QFont, QColor, QMovie
@@ -35,6 +36,8 @@ class Example(QMainWindow):
         self.menu_button = self.create_button("Вернуться в меню", self.set_menu)
         self.good_button = self.create_button('Ответил', self.good_answer, "#95D7AE")
         self.bad_button = self.create_button('Не ответил', self.bad_answer, "#FA824C")
+        self.skip_button = self.create_button('Отложить вопрос', self.skip_question)
+        self.check_box = QCheckBox()
         self.question_label = QLabel()
         self.learned_label = QLabel()
         self.learned_label.setFont(QFont("Consolas", 14))
@@ -62,6 +65,10 @@ class Example(QMainWindow):
         vbox.addWidget(self.teach_old)
         vbox.addWidget(self.teach_new)
         vbox.addWidget(self.teach_all)
+        self.check_box.stateChanged.connect(Questions.set_random_state)
+        self.check_box.setText('Показывать вопросы в случайном порядке')
+        self.check_box.setChecked(True)
+        vbox.addWidget(self.check_box)
         vbox.addStretch(1)
         self.setCentralWidget(widget)
         self.center()
@@ -116,7 +123,9 @@ class Example(QMainWindow):
         # btns_hbox.addStretch(1)
         btns_hbox.addWidget(self.good_button)
         # btns_hbox.addStretch(1)
+        btns_hbox.addWidget(self.skip_button)
         btns_hbox.addWidget(self.bad_button)
+
         # btns_hbox.addStretch(1)
 
         bottom_hbox = QHBoxLayout()
@@ -197,7 +206,7 @@ class Example(QMainWindow):
         if text is not None:
             self.question_label.setText(text)
         else:
-            self.question_label.setText("Поздравляю! Ты смогли ответил на все вопросы)")
+            self.question_label.setText("Поздравляю! Ты смог ответить на все вопросы)")
             self.good_button.setEnabled(False)
             self.bad_button.setEnabled(False)
         self.update_stats_labels()
@@ -210,12 +219,19 @@ class Example(QMainWindow):
     def bad_answer(self):
         Questions.question_failed()
         text = Questions.get_question()
-        self.question_label.setText("Потвори и попробуй еще раз...\n"+text)
+        self.question_label.setText("Повтори и попробуй еще раз...\n" + text)
         self.update_stats_labels()
 
     def set_menu(self):
         self.close()
         self.__init__()
+
+    def skip_question(self):
+        Questions.skip_question()
+        self.update_stats_labels()
+        text = Questions.get_question()
+        self.question_label.setText(text)
+
 
 
 if __name__ == "__main__":

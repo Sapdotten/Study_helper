@@ -90,7 +90,7 @@ class Questions:
         """Вызывается после каждого выученного и добавляет его в список выученных
         """
         if cls.status == 'new':
-            with open(cls.files['old'], 'w+', encoding='utf-8') as f:
+            with open(cls.files['old'], 'a+', encoding='utf-8') as f:
                 f.write(cls.queue[0][0])
         elif cls.status == 'all':
             learned = set()
@@ -138,7 +138,7 @@ class Questions:
     @classmethod
     def add_to_unlearned(cls, unlearned_text: str):
         if cls.status == 'old':
-            with open(cls.files['new'], 'w+', encoding='utf-8') as f:
+            with open(cls.files['new'], 'a+', encoding='utf-8') as f:
                 f.write(unlearned_text)
         elif cls.status == 'all':
             unlearned = set()
